@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Reports — Admin Panel</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body class="{{ theme }} app-bg">
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>ADMIN PANEL</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin">Dashboard</a>
+                <a href="/admin_feedback">Review Feedback</a>
+                <a href="/admin_reports" class="active">Reports</a>
+                <a href="/admin_users">User Management</a>
+                <a href="/admin_settings">Settings</a>
+                <a href="/logout" class="logout">Logout</a>
+            </nav>
+            <!-- Footer removed -->
+        </aside>
+
+        <main class="main">
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>System Reports</h1>
+                    <p>Data export and management interface for administration.</p>
+                </div>
+                <div>
+                    <a href="/export_csv" class="btn btn-primary"
+                        style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Export to CSV
+                    </a>
+                    <a href="/export_pdf" class="btn btn-primary"
+                        style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; background-color: #ef4444;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Export to PDF
+                    </a>
+                </div>
+            </div>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Feedback Total</div>
+                    <div class="stat-value">{{ total_feedback }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Institutional Mean</div>
+                    <div class="stat-value">{{ overall_avg }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Faculty Count</div>
+                    <div class="stat-value">{{ teacher_avg|length }}</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Master Feedback Table</div>
+                {% if indexed_feedbacks %}
+                <div class="table-wrap">
+                    <table id="reportsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Student</th>
+                                <th>Teacher</th>
+                                <th>Subject</th>
+                                <th>Rating</th>
+                                <th>Comment</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in indexed_feedbacks %}
+                            <tr>
+                                <td style="font-size: 11px; color: var(--muted);">#{{ loop.index }}</td>
+                                <td class="fw-600">
+                                    {% if f.is_anonymous %}
+                                    <span style="color: var(--muted); font-style: italic;">Anonymous Student</span>
+                                    {% else %}
+                                    <a href="/user_profile/{{ f.student }}"
+                                        style="text-decoration: none; color: var(--accent);">{{ f.student }}</a>
+                                    {% endif %}
+                                </td>
+                                <td>{{ f.teacher.capitalize() }}</td>
+                                <td>{{ f.subject if f.subject else '—' }}</td>
+                                <td><span style="font-weight: 700; color: var(--accent);">{{ f.rating }}</span></td>
+                                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                    title="{{ f.comment }}">
+                                    {{ f.comment }}
+                                </td>
+                                <td style="font-size: 11px; color: var(--muted);">{{ f.date if f.date else '—' }}</td>
+                                <td>
+                                    <form method="POST" action="/delete_feedback/{{ f.id }}" style="display: inline;">
+                                        <button type="submit" class="btn btn-primary"
+                                            style="background: #ef4444; padding: 6px 12px; font-size: 12px;"
+                                            onclick="return confirm('Permanently delete this entry?')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 40px; color: var(--muted);">
+                    <p>No feedback available for reporting.</p>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const dataTable = new simpleDatatables.DataTable("#reportsTable", {
+                searchable: true,
+                fixedHeight: true,
+                perPage: 15,
+                perPageSelect: [10, 15, 25, 50, 100]
+            });
+        });
+    </script>
+</body>
+
+</html>

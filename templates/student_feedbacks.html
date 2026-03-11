@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Submissions | Faculty Analytics</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body class="{{ theme }} app-bg">
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>STUDENT PORTAL</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/student_dashboard">Dashboard</a>
+                <a href="/user_profile/{{ username }}">My Profile</a>
+                <a href="/student_feedbacks" class="active">My Submissions</a>
+                <a href="/feedback">Submit Feedback</a>
+                <a href="/student_settings">Settings</a>
+                <a href="/logout" class="logout">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <div class="page-header">
+                <h1>My Feedback Submissions</h1>
+                <p>Review all the feedback you have previously submitted.</p>
+            </div>
+
+            {% if feedbacks %}
+            <div class="panel">
+                <div class="panel-title">Submission History</div>
+                <div class="table-wrap">
+                    <table id="feedbacksTable">
+                        <thead>
+                            <tr>
+                                <th>Teacher</th>
+                                <th>Department</th>
+                                <th>Subject</th>
+                                <th>Rating</th>
+                                <th>Comment</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in feedbacks %}
+                            <tr>
+                                <td style="font-weight: 600;">{{ f.teacher }}</td>
+                                <td><span style="background: var(--accent); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600;">{{ f.department }}</span></td>
+                                <td>{{ f.subject or '—' }}</td>
+                                <td><span style="font-weight: 700; color: var(--accent);">{{ f.rating }}/5</span></td>
+                                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 13px;">{{ f.comment }}</td>
+                                <td style="font-size: 12px; color: var(--muted);">{{ f.date or '—' }}</td>
+                                <td>
+                                    <a href="/view_feedback/{{ f.id }}"
+                                        style="background: rgba(37, 99, 235, 0.1); color: var(--accent); padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;">View Details</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="panel">
+                <div style="padding: 40px; text-align: center; color: var(--muted);">
+                    <h3 style="color: var(--text);">No Submissions Yet</h3>
+                    <p style="margin-top: 10px;">You haven't submitted any feedback yet. Start by evaluating a faculty member.</p>
+                    <br>
+                    <a href="/feedback" class="btn btn-primary">Submit Feedback</a>
+                </div>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const table = document.getElementById("feedbacksTable");
+            if (table) {
+                new simpleDatatables.DataTable("#feedbacksTable", {
+                    searchable: true,
+                    fixedHeight: true,
+                    perPage: 10,
+                    perPageSelect: [10, 20, 50]
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management | Faculty Analytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+</head>
+
+<body class="{{ current_theme }} app-bg">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>Analytics App</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin">Dashboard</a>
+                <a href="/admin_feedback">Review Feedback</a>
+                <a href="/admin_reports">Reports</a>
+                <a href="/admin_users" class="active">User Management</a>
+                <a href="/admin_settings">Settings</a>
+                <a href="/logout" class="logout">Logout</a>
+            </nav>
+            <!-- Footer removed -->
+        </aside>
+
+        <main class="main">
+            <div class="page-header">
+                <h1>User Management</h1>
+                <p>Add, monitor, and remove users across the platform.</p>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Add New User</div>
+                <form action="/add_user" method="POST" enctype="multipart/form-data"
+                    style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label>Username (ID)</label>
+                        <input type="text" name="username" required placeholder="User ID">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label>Password</label>
+                        <input type="password" name="password" required placeholder="Secure Password">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label>Full Name</label>
+                        <input type="text" name="full_name" required placeholder="John Doe">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label>Email</label>
+                        <input type="email" name="email" required placeholder="john@example.com">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label>Mobile Number</label>
+                        <input type="text" name="mobile" required placeholder="+1234567890">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;" id="year-field-wrapper">
+                        <label>Year / Student ID</label>
+                        <input type="text" name="year" id="year-input" placeholder="Year or Student ID">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label>Role</label>
+                        <select name="role" id="role-select" required onchange="toggleYearField()">
+                            <option value="student">Student</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label>Profile Photo</label>
+                        <input type="file" name="photo" required accept="image/*">
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">Create User</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Registered Users</div>
+                <div class="table-wrap">
+                    <table id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Photo</th>
+                                <th>ID</th>
+                                <th>Name / Username</th>
+                                <th>Contact Info</th>
+                                <th>Role</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                            <tr>
+                                <td>
+                                    {% if u.photo_url %}
+                                    <img src="{{ u.photo_url }}"
+                                        style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: center top; padding: 2px; background: var(--surface); box-sizing: border-box; border: 2px solid var(--accent);">
+                                    {% else %}
+                                    <div
+                                        style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #475569;">
+                                        {{ u.username[0].upper() }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>#{{ u.id }}</td>
+                                <td>
+                                    <div style="font-weight: 700; color: var(--text);">{{ u.full_name or 'N/A' }}</div>
+                                    <div style="font-size: 13px; color: var(--muted);">@{{ u.username }}</div>
+                                    {% if u.username == user %}
+                                    <span
+                                        style="font-size: 10px; padding: 1px 5px; background: var(--accent); border-radius: 3px; color: #fff; vertical-align: middle;">YOU</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="font-size: 13px;">{{ u.email or '—' }}</div>
+                                    <div style="font-size: 12px; color: var(--muted);">{{ u.mobile or '—' }}</div>
+                                </td>
+                                <td style="text-transform: capitalize;">{{ u.role }}</td>
+                                <td>
+                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                        <a href="/user_profile/{{ u.username }}"
+                                            style="background: rgba(37, 99, 235, 0.1); color: var(--accent); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; font-size: 13px;">View Profile</a>
+                                        {% if u.username != user %}
+                                        <form action="/delete_user/{{ u.id }}" method="POST"
+                                            onsubmit="return confirm('Are you sure you want to delete this user?');" style="margin: 0;">
+                                            <button type="submit"
+                                                style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">Delete</button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            new simpleDatatables.DataTable("#usersTable", {
+                searchable: true,
+                fixedHeight: true,
+                perPage: 10
+            });
+            toggleYearField(); // Initial check
+        });
+
+        function toggleYearField() {
+            var roleSelect = document.getElementById("role-select");
+            var yearWrapper = document.getElementById("year-field-wrapper");
+            var yearInput = document.getElementById("year-input");
+            if (roleSelect.value === "student") {
+                yearWrapper.style.display = "block";
+                yearInput.required = true;
+            } else {
+                yearWrapper.style.display = "none";
+                yearInput.required = false;
+                yearInput.value = ""; // Clear it if not student
+            }
+        }
+    </script>
+</body>
+
+</html>

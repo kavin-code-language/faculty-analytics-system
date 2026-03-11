@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal — Faculty Analytics</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="{{ theme }} app-bg">
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>STUDENT PORTAL</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/student_dashboard">Dashboard</a>
+                <a href="/user_profile/{{ username }}">My Profile</a>
+                <a href="/student_feedbacks">My Submissions</a>
+                <a href="/feedback" class="active">Submit Feedback</a>
+                <a href="/student_settings">Settings</a>
+                <a href="/logout" class="logout">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main" style="display: flex; align-items: center; justify-content: center; padding: 20px; background: radial-gradient(circle at top right, var(--surface), var(--card)); overflow: hidden; min-height: 100vh;">
+
+        <div class="panel"
+            style="width: 100%; max-width: 800px; padding: 40px; border-radius: 24px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); background: var(--card); transform: none; position: relative;">
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div class="header-photo" style="position: relative; cursor: pointer;"
+                        onclick="toggleProfileDropdown()">
+                        {% if student.photo_url %}
+                        <img src="{{ student.photo_url }}"
+                            style="width: 50px; height: 50px; border-radius: 12px; object-fit: cover; object-position: center top; padding: 2px; background: var(--surface); border: 2px solid var(--accent); box-sizing: border-box;">
+                        {% else %}
+                        <div
+                            style="background: var(--accent); padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; box-sizing: border-box;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 10L12 5L2 10L12 15L22 10Z" stroke="white" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M6 12V17C6 17 8.5 19 12 19C15.5 19 18 17 18 17V12" stroke="white"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        {% endif %}
+                        <!-- Dropdown Menu -->
+                        <div id="profile-dropdown" class="dropdown-content"
+                            style="display: none; position: absolute; top: 60px; left: 0; background: var(--card); min-width: 180px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 1000; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; padding: 8px;">
+                            <a href="/user_profile/{{ username }}"
+                                style="color: var(--text); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; transition: background 0.2s; border-radius: 8px; margin-bottom: 4px;"
+                                onmouseover="this.style.background='rgba(37, 99, 235, 0.05)'; this.style.color='var(--accent)';"
+                                onmouseout="this.style.background='none'; this.style.color='var(--text)';">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                Profile Details
+                            </a>
+                            <a href="mailto:helpdesk@facultyanalytics.com"
+                                style="color: var(--text); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; transition: background 0.2s; border-radius: 8px;"
+                                onmouseover="this.style.background='rgba(37, 99, 235, 0.05)'; this.style.color='var(--accent)';"
+                                onmouseout="this.style.background='none'; this.style.color='var(--text)';">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                    </path>
+                                </svg>
+                                Help Desk
+                            </a>
+                        </div>
+                    </div>
+                    <div>
+                        <h1
+                            style="font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 800; color: var(--text); margin: 0;">
+                            Welcome, {{ student.full_name or student.username.capitalize() }}</h1>
+                        <p style="color: var(--muted); font-size: 14px; margin: 0;">Faculty Performance Evaluation</p>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <span
+                        style="font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px;">Academic
+                        Audit 2026</span>
+                </div>
+            </div>
+
+            <form method="POST" action="/submit_feedback">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+
+                    <!-- Left Column: Identity -->
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label
+                                style="color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Student
+                                Identity</label>
+                            <input type="text" value="{{ username }}" readonly
+                                style="background: var(--surface); border: 1px solid var(--border); opacity: 0.8; cursor: not-allowed;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label
+                                style="color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Departmental
+                                Unit</label>
+                            <select name="department" required
+                                style="background: var(--surface); border: 1px solid var(--border);">
+                                <option value="" disabled selected>Select Department</option>
+                                <option value="IT">Information Technology</option>
+                                <option value="CSE">Computer Science</option>
+                                <option value="MECH">Mechanical Eng.</option>
+                                <option value="ECE">Electronics</option>
+                                <option value="AIDS">AI & Data Science</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label
+                                style="color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Target
+                                Faculty Member</label>
+                            <select name="teacher" required
+                                style="background: var(--surface); border: 1px solid var(--border);">
+                                <option value="" disabled selected>Select Teacher</option>
+                                {% for t in teachers %}
+                                <option value="{{ t }}">{{ t.capitalize() }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label
+                                style="color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Course
+                                Specification</label>
+                            <input type="text" name="subject" placeholder="e.g. CS201 - Data Structures" required
+                                style="background: var(--surface); border: 1px solid var(--border);">
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Performance -->
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label
+                                style="color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Performance
+                                Quantitative Rating</label>
+                            <div style="display: flex; justify-content: space-between; gap: 10px; margin-top: 5px;">
+                                {% for i in range(1, 6) %}
+                                <label
+                                    style="flex: 1; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                                    <input type="radio" name="rating" value="{{ i }}" required style="display: none;" {%
+                                        if i==4 %}checked{% endif %} onchange="updateRatingUI(this)">
+                                    <div class="rating-btn"
+                                        style="width: 100%; height: 45px; display: flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; font-weight: 800; font-size: 18px; color: var(--text-2); transition: all 0.2s ease;">
+                                        {{ i }}
+                                    </div>
+                                    <span style="font-size: 9px; font-weight: 600; color: var(--muted);">{% if i == 1
+                                        %}Poor{% elif i == 3 %}Avg{% elif i == 5 %}Excel{% endif %}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="form-group"
+                            style="flex: 1; display: flex; flex-direction: column; margin-bottom: 0;">
+                            <label
+                                style="color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Qualitative
+                                Executive Remarks</label>
+                            <textarea name="comment"
+                                placeholder="Provide constructive feedback regarding instructional methodology..."
+                                required
+                                style="flex: 1; min-height: 140px; background: var(--surface); border: 1px solid var(--border); resize: none;"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Anonymous Toggle -->
+                <div
+                    style="margin-top: 25px; padding: 15px; background: rgba(37, 99, 235, 0.05); border-radius: 12px; border: 1px dashed var(--accent); display: flex; align-items: center; gap: 15px;">
+                    <label class="switch" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                        <input type="checkbox" name="is_anonymous" style="opacity: 0; width: 0; height: 0;">
+                        <span class="slider"
+                            style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 24px;"></span>
+                    </label>
+                    <div>
+                        <h4 style="margin: 0; font-size: 14px; color: var(--text); font-weight: 700;">Submit Anonymously
+                        </h4>
+                        <p style="margin: 3px 0 0; font-size: 12px; color: var(--muted);">Hide your identity from the
+                            faculty member. Your feedback will still be recorded securely.</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; display: flex; align-items: center; gap: 20px;">
+                    <button type="submit" class="btn btn-primary"
+                        style="flex: 2; height: 50px; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; border-radius: 14px;">
+                        Submit Official Evaluation
+                    </button>
+                    <a href="/logout"
+                        style="flex: 1; text-align: center; color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 600; border: 1px solid var(--border); height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 14px; transition: all 0.2s ease;">
+                        Sign Out
+                    </a>
+                </div>
+            </form>
+        </div>
+        </main>
+    </div>
+
+    <style>
+        .rating-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        input[type="radio"]:checked+.rating-btn {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            background: var(--card) !important;
+            border-color: var(--accent) !important;
+        }
+
+        /* Toggle Switch CSS */
+        .switch input:checked+.slider {
+            background-color: var(--accent);
+        }
+
+        .switch input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+    </style>
+
+    <script>
+        function updateRatingUI(el) {
+            // UI effect handled by CSS :checked selector
+        }
+
+        function toggleProfileDropdown() {
+            var dropdown = document.getElementById('profile-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' || dropdown.style.display === '' ? 'block' : 'none';
+        }
+
+        window.onclick = function (event) {
+            if (!event.target.closest('.header-photo')) {
+                var dropdown = document.getElementById('profile-dropdown');
+                if (dropdown && dropdown.style.display === 'block') {
+                    dropdown.style.display = 'none';
+                }
+            }
+        }
+    </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Settings — Faculty Analytics</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="{{ theme }} app-bg">
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>FACULTY PORTAL</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/teacher_marks">Student Marks</a>
+                <a href="/teacher_feedback">Student Feedback</a>
+                <a href="/settings" class="active">Settings</a>
+                <a href="/logout" class="logout">Logout</a>
+            </nav>
+            <!-- Footer removed -->
+        </aside>
+
+        <main class="main">
+            <div class="page-header">
+                <h1>Settings</h1>
+                <p>Configure your teaching dashboard and profile preferences.</p>
+            </div>
+
+            {% if message %}
+            <div
+                style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(34, 197, 94, 0.2); font-weight: 600;">
+                {{ message }}
+            </div>
+            {% endif %}
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div class="panel">
+                    <div class="panel-title">Security</div>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="password">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" name="old_password" required>
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" name="new_password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Update Password</button>
+                    </form>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">Appearance</div>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="theme">
+                        <div class="form-group">
+                            <label>System Theme</label>
+                            <select name="theme" onchange="this.form.submit()">
+                                <option value="theme-light" {% if theme=='theme-light' %}selected{% endif %}>
+                                    Professional Light</option>
+                                <option value="theme-professional" {% if theme=='theme-professional' %}selected{% endif
+                                    %}>
+                                    Executive Slate (New)</option>
+                                <option value="theme-dark-ai" {% if theme=='theme-dark-ai' %}selected{% endif %}>
+                                    Professional Dark AI</option>
+                                <option value="theme-glass" {% if theme=='theme-glass' %}selected{% endif %}>Futuristic
+                                    Glassmorphism</option>
+                                <option value="theme-dynamic" {% if theme=='theme-dynamic' %}selected{% endif %}>Dynamic
+                                    Ambient</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+
+</html>

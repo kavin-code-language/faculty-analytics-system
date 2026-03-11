@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Details — Admin Panel</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="{{ theme }} app-bg">
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>ADMIN PANEL</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin">Dashboard</a>
+                <a href="/admin_feedback">Feedback</a>
+                <a href="/admin_reports">Reports</a>
+                <a href="/admin_settings">Settings</a>
+                <a href="/logout" class="logout">Logout</a>
+            </nav>
+            <!-- Footer removed -->
+        </aside>
+
+        <main class="main">
+            1: <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>Faculty Detail: {{ name.capitalize() }}</h1>
+                    <p>In-depth performance breakdown for individual faculty member.</p>
+                </div>
+                <div class="header-profile" style="display: flex; align-items: center; gap: 15px;">
+                    <div style="text-align: right;">
+                        <div style="font-weight: 600; font-size: 14px; color: var(--text);">Teacher Profile</div>
+                        <div style="font-size: 12px; color: var(--muted);">@{{ name }}</div>
+                    </div>
+                    {% if teacher.photo_url %}
+                    <img src="{{ teacher.photo_url }}"
+                        style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; object-position: center top; padding: 2px; background: var(--surface); border: 2px solid var(--accent); box-sizing: border-box;">
+                    {% else %}
+                    <div
+                        style="width: 55px; height: 55px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #475569;">
+                        {{ name[0].upper() }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Average Score</div>
+                    <div class="stat-value">{{ avg }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Positive Feedback</div>
+                    <div class="stat-value" style="color: #22c55e;">{{ high }}</div>
+                    <div class="stat-sub">Ratings 4 & 5</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Negative Feedback</div>
+                    <div class="stat-value" style="color: #ef4444;">{{ low }}</div>
+                    <div class="stat-sub">Ratings 1 & 2</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Qualitative Feedback</div>
+                {% if comments %}
+                {% for c in comments %}
+                <div class="comment-item" style="padding: 15px; border-bottom: 1px solid var(--border);">
+                    <p style="margin: 0; font-weight: 700; color: var(--text);">
+                        {% if c.student == 'Anonymous Student' %}
+                        <span style="color: var(--muted); font-style: italic;">Anonymous Student</span>
+                        {% else %}
+                        <a href="/user_profile/{{ c.student }}" style="text-decoration: none; color: var(--accent);">{{
+                            c.student }}</a>
+                        {% endif %}
+                    </p>
+                    <p style="margin: 5px 0 0; color: var(--text-2);">"{{ c.comment }}"</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted">No comments recorded for this faculty.</p>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+</body>
+
+</html>
