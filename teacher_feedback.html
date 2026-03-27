@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Feedback — Faculty Analytics</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body class="{{ theme }} app-bg">
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>FACULTY PORTAL</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/teacher_marks">Student Marks</a>
+                <a href="/teacher_feedback" class="active">Student Feedback</a>
+                <a href="/settings">Settings</a>
+                <a href="/logout" class="logout">Logout</a>
+            </nav>
+            <!-- Footer removed -->
+        </aside>
+
+        <main class="main">
+            <div class="page-header">
+                <h1>Student Feedback</h1>
+                <p>Detailed records of student submissions and comments.</p>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Your Recent Reviews</div>
+                {% if feedbacks %}
+                <div class="table-wrap">
+                    <table id="teacherFeedbackTable">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Department</th>
+                                <th>Subject</th>
+                                <th>Rating</th>
+                                <th>Date</th>
+                                <th>Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in feedbacks %}
+                            <tr>
+                                <td class="fw-600">
+                                    {% if f.is_anonymous %}
+                                    <span style="color: var(--muted); font-style: italic;">Anonymous Student</span>
+                                    {% else %}
+                                    <a href="/user_profile/{{ f.student }}"
+                                        style="text-decoration: none; color: var(--accent);">{{ f.student }}</a>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge"
+                                        style="background: var(--accent); color: #fff; padding: 4px 10px; border-radius: 8px;">{{
+                                        f.department }}</span></td>
+                                <td>{{ f.subject if f.subject else '—' }}</td>
+                                <td><span style="font-weight: 700; color: var(--accent);">{{ f.rating }}</span></td>
+                                <td style="font-size: 11px; color: var(--muted);">{{ f.date if f.date else '—' }}</td>
+                                <td class="text-muted">{{ f.comment }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 40px; color: var(--muted);">
+                    <p>No feedback received yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const dataTable = new simpleDatatables.DataTable("#teacherFeedbackTable", {
+                searchable: true,
+                fixedHeight: true,
+                perPage: 10,
+                perPageSelect: [10, 20, 50]
+            });
+        });
+    </script>
+</body>
+
+</html>
