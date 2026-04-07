@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Successful — Faculty Analytics</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .success-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: var(--surface);
+            background-image:
+                radial-gradient(at 0% 0%, var(--accent-soft) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, var(--accent-soft) 0px, transparent 50%);
+        }
+
+        .success-card {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 56px 40px;
+            text-align: center;
+        }
+
+        .icon-wrapper {
+            width: 120px;
+            height: 120px;
+            background: rgba(34, 197, 94, 0.08);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 32px;
+            border: 2px solid rgba(34, 197, 94, 0.15);
+            animation: iconPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes iconPop {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-card h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .success-card p {
+            font-size: 16px;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 16px;
+        }
+
+        .btn-again {
+            height: 56px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            color: #fff;
+            border-radius: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px var(--accent-glow);
+            transition: var(--transition);
+        }
+
+        .btn-again:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px var(--accent-glow);
+        }
+
+        .btn-out {
+            height: 56px;
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            font-weight: 600;
+            color: var(--muted);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .btn-out:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.03);
+        }
+
+        .reviewer-tag {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px dashed var(--border);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+        }
+
+        .reviewer-tag span {
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body class="{{ theme }} app-bg">
+
+    <div class="success-container">
+        <div class="success-card">
+
+            <div class="icon-wrapper">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+
+            <h1>Review Submitted</h1>
+            <p>Your institutional evaluation has been securely recorded. Thank you for your contribution to our academic
+                quality standards.</p>
+
+            <div class="actions-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                <a href="/view_feedback/{{ feedback_id }}" class="btn-again" style="font-size: 13px;">Review Your Submission</a>
+                <a href="/feedback" class="btn-out" style="font-size: 13px;">Submit Another</a>
+                <a href="/student_dashboard" class="btn-out" style="font-size: 13px;">Dashboard</a>
+            </div>
+
+            <div class="reviewer-tag">
+                System Token: <span>STUDENT_{{ session.get('user', 'PUBLIC')|upper }}</span>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

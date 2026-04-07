@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Not Found | Faculty Analytics</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="{{ theme }} app-bg">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>Analytics App</h2>
+            </div>
+            <nav class="sidebar-nav">
+                
+                <a href="/logout" class="logout">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <div class="page-header">
+                <h1>User Record Not Found</h1>
+                <p>The profile you are looking for does not exist in our system.</p>
+            </div>
+
+            <div class="panel" style="text-align: center; padding: 60px 20px;">
+                <div style="font-size: 64px; margin-bottom: 20px;">🔍</div>
+                <h2 style="color: var(--text); margin-bottom: 10px;">User "{{ username }}" not found</h2>
+                <p style="color: var(--muted); max-width: 500px; margin: 0 auto 30px;">
+                    This might happen if the user was deleted, or if the feedback record was imported from a legacy system.
+                </p>
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <a href="javascript:history.back()" class="btn btn-primary" style="background: var(--accent);">Go Back</a>
+                    
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

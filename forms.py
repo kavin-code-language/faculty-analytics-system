@@ -8,7 +8,11 @@ class LoginForm(FlaskForm):
 
 class AddUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=100)])
+ HEAD
     password = PasswordField('Password', validators=[DataRequired(), Length(min=1)])
+
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
+ c2f21298314da2b4f3158326874e3d0d96d28e94
     role = SelectField('Role', choices=[('student', 'Student'), ('teacher', 'Teacher'), ('admin', 'Admin')], validators=[DataRequired()])
     full_name = StringField('Full Name', validators=[DataRequired(), Length(max=100)])
     email = StringField('Email', validators=[DataRequired(), Email()])
