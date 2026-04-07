@@ -17,7 +17,6 @@
             </div>
             <nav class="sidebar-nav">
                 <a href="/student_dashboard">Dashboard</a>
-                <a href="/user_profile/{{ username }}">My Profile</a>
                 <a href="/student_feedbacks">My Submissions</a>
                 <a href="/feedback" class="active">Submit Feedback</a>
                 <a href="/student_settings">Settings</a>
@@ -61,7 +60,7 @@
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                     <circle cx="12" cy="7" r="4"></circle>
                                 </svg>
-                                Profile Details
+                                My Profile
                             </a>
                             <a href="mailto:helpdesk@facultyanalytics.com"
                                 style="color: var(--text); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; transition: background 0.2s; border-radius: 8px;"
@@ -92,6 +91,7 @@
             </div>
 
             <form method="POST" action="/submit_feedback">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
 
                     <!-- Left Column: Identity -->

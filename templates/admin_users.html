@@ -33,10 +33,26 @@
                 <p>Add, monitor, and remove users across the platform.</p>
             </div>
 
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div style="margin-bottom: 20px;">
+                {% for category, message in messages %}
+                <div style="padding: 12px 20px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; 
+                                background: {{ '#ecfdf5' if category == 'success' else '#fef2f2' }}; 
+                                color: {{ '#059669' if category == 'success' else '#dc2626' }};
+                                border: 1px solid {{ '#10b981' if category == 'success' else '#f87171' }};">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
             <div class="panel">
                 <div class="panel-title">Add New User</div>
                 <form action="/add_user" method="POST" enctype="multipart/form-data"
                     style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <div style="flex: 1; min-width: 200px;">
                         <label>Username (ID)</label>
                         <input type="text" name="username" required placeholder="User ID">
@@ -71,7 +87,7 @@
                     </div>
                     <div style="flex: 1; min-width: 200px;">
                         <label>Profile Photo</label>
-                        <input type="file" name="photo" required accept="image/*">
+                        <input type="file" name="photo" accept="image/*">
                     </div>
                     <div>
                         <button type="submit" class="btn btn-primary">Create User</button>
@@ -123,10 +139,13 @@
                                 <td>
                                     <div style="display: flex; gap: 8px; align-items: center;">
                                         <a href="/user_profile/{{ u.username }}"
-                                            style="background: rgba(37, 99, 235, 0.1); color: var(--accent); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; font-size: 13px;">View Profile</a>
+                                            style="background: rgba(37, 99, 235, 0.1); color: var(--accent); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; font-size: 13px;">View
+                                            Profile</a>
                                         {% if u.username != user %}
                                         <form action="/delete_user/{{ u.id }}" method="POST"
-                                            onsubmit="return confirm('Are you sure you want to delete this user?');" style="margin: 0;">
+                                            onsubmit="return confirm('Are you sure you want to delete this user?');"
+                                            style="margin: 0;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                                             <button type="submit"
                                                 style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">Delete</button>
                                         </form>

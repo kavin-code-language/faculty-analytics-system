@@ -113,6 +113,7 @@
                                 <td style="font-size: 11px; color: var(--muted);">{{ f.date if f.date else '—' }}</td>
                                 <td>
                                     <form method="POST" action="/delete_feedback/{{ f.id }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                         <button type="submit" class="btn btn-primary"
                                             style="background: #ef4444; padding: 6px 12px; font-size: 12px;"
                                             onclick="return confirm('Permanently delete this entry?')">Delete</button>

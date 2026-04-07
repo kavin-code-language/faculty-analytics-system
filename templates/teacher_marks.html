@@ -98,6 +98,7 @@
                 <div class="form-panel">
                     <h3 style="margin-top: 0; color: var(--text); margin-bottom: 20px;">Record New Mark</h3>
                     <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>Student</label>
@@ -173,22 +174,25 @@
                                 <td><span style="color: var(--muted); font-size: 13px;">{{ m.date_added }}</span></td>
                                 <td>
                                     <div style="display: flex; gap: 6px;">
-                                        <button type="button" onclick="showEditRow({{ m.id }})"
+                                        <button type="button" onclick="showEditRow('{{ m.id }}')"
                                             style="background: rgba(37, 99, 235, 0.1); color: var(--accent); border: 1px solid rgba(37, 99, 235, 0.2); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Edit</button>
                                         <form action="/delete_mark/{{ m.id }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this mark record?');" style="margin: 0;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                             <button type="submit" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Delete</button>
                                         </form>
                                     </div>
                                 </td>
                             </tr>
                             <tr id="row-edit-{{ m.id }}" style="display: none;">
-                                <form action="/edit_mark/{{ m.id }}" method="POST">
                                 <td>
+                                    <form id="edit-form-{{ m.id }}" action="/edit_mark/{{ m.id }}" method="POST">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    </form>
                                     <div style="font-weight: 600;">{{ m.student_username }}</div>
                                 </td>
-                                <td><input type="text" name="subject" value="{{ m.subject }}" required style="width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font-size: 13px;"></td>
+                                <td><input form="edit-form-{{ m.id }}" type="text" name="subject" value="{{ m.subject }}" required style="width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font-size: 13px;"></td>
                                 <td>
-                                    <select name="semester" required style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font-size: 13px;">
+                                    <select form="edit-form-{{ m.id }}" name="semester" required style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font-size: 13px;">
                                         <option value="Semester 1" {% if m.semester == 'Semester 1' %}selected{% endif %}>Sem 1</option>
                                         <option value="Semester 2" {% if m.semester == 'Semester 2' %}selected{% endif %}>Sem 2</option>
                                         <option value="Semester 3" {% if m.semester == 'Semester 3' %}selected{% endif %}>Sem 3</option>
@@ -199,15 +203,14 @@
                                         <option value="Semester 8" {% if m.semester == 'Semester 8' %}selected{% endif %}>Sem 8</option>
                                     </select>
                                 </td>
-                                <td><input type="text" name="score" value="{{ m.score }}" required style="width: 80px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font-size: 13px;"></td>
+                                <td><input form="edit-form-{{ m.id }}" type="text" name="score" value="{{ m.score }}" required style="width: 80px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font-size: 13px;"></td>
                                 <td><span style="color: var(--muted); font-size: 13px;">{{ m.date_added }}</span></td>
                                 <td>
                                     <div style="display: flex; gap: 6px;">
-                                        <button type="submit" style="background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Save</button>
-                                        <button type="button" onclick="hideEditRow({{ m.id }})" style="background: rgba(100,116,139,0.1); color: #64748b; border: 1px solid rgba(100,116,139,0.2); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Cancel</button>
+                                        <button form="edit-form-{{ m.id }}" type="submit" style="background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Save</button>
+                                        <button type="button" onclick="hideEditRow('{{ m.id }}')" style="background: rgba(100,116,139,0.1); color: #64748b; border: 1px solid rgba(100,116,139,0.2); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Cancel</button>
                                     </div>
                                 </td>
-                                </form>
                             </tr>
                             {% endfor %}
                         </tbody>

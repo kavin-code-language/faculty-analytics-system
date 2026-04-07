@@ -2,15 +2,18 @@ import os
 import csv
 from io import StringIO
 from fpdf import FPDF
-from flask import Flask, render_template, request, redirect, session, make_response  # type: ignore
+from flask import Flask, render_template, request, redirect, session, make_response, flash  # type: ignore
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 from werkzeug.security import generate_password_hash, check_password_hash  # type: ignore
 from werkzeug.utils import secure_filename
+from flask_wtf.csrf import CSRFProtect
+from forms import LoginForm, AddUserForm, FeedbackForm, MarkForm, SettingsForm
 
 # ================= APP =================
 app = Flask(__name__)
 app.secret_key = "super_secret_faculty_key"
+csrf = CSRFProtect(app)
 
 UPLOAD_FOLDER = 'static/uploads/profile_photos'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -40,6 +43,7 @@ class User(db.Model):  # type: ignore
     mobile = db.Column(db.String(20))
     year = db.Column(db.String(20)) # For students
     photo_url = db.Column(db.String(200)) # Path to profile photo
+    theme = db.Column(db.String(50), default="theme-light")
 
     def __init__(self, username=None, password_hash=None, role=None, full_name=None, email=None, mobile=None, year=None, photo_url=None, **kwargs):
         super().__init__(**kwargs)
@@ -51,6 +55,7 @@ class User(db.Model):  # type: ignore
         if mobile is not None: self.mobile = mobile
         if year is not None: self.year = year
         if photo_url is not None: self.photo_url = photo_url
+        if 'theme' in kwargs: self.theme = kwargs['theme']
 
 # ================= HELPERS =================
 
@@ -128,16 +133,17 @@ def login():
         elif role == "student":
             return redirect("/student_dashboard")
 
-    if request.method == "POST":
-        username = request.form.get("username", "").strip()
-        password = request.form.get("password", "")
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data.strip()
+        password = form.password.data
 
         user = User.query.filter_by(username=username).first()
 
         if user and check_password_hash(user.password_hash, password):
             session["user"] = username
             session["role"] = user.role
-            session["theme"] = "theme-light"  # Default Professional Light for all
+            session["theme"] = user.theme or "theme-light"
             
             if user.role == "admin":
                 return redirect("/admin")
@@ -146,9 +152,9 @@ def login():
             else:
                 return redirect("/student_dashboard")
         
-        return render_template("login.html", error="Invalid credentials.")
+        return render_template("login.html", error="Invalid credentials.", form=form)
 
-    return render_template("login.html", error=None)
+    return render_template("login.html", error=None, form=form)
 
 @app.route("/logout")
 def logout():
@@ -204,6 +210,9 @@ def student_settings():
         elif action == "theme":
             theme            = request.form.get("theme", "theme-light")
             session["theme"] = theme
+            if student_user:
+                student_user.theme = theme
+                db.session.commit()
             message          = "Theme saved!"
 
     return render_template("student_settings.html", student=student_user, username=student, message=message, theme=theme)
@@ -244,27 +253,25 @@ def submit_feedback():
     if session.get("role") != "student":
         return redirect("/")
 
-    try:
-        rating = int(request.form.get("rating", "0"))
-    except ValueError:
-        rating = 0
+    form = FeedbackForm()
+    if form.validate_on_submit():
+        new_feedback = Feedback(
+            student=session.get("user", "Unknown"),
+            department=form.department.data,
+            teacher=form.teacher.data,
+            subject=form.subject.data,
+            rating=form.rating.data,
+            comment=form.comment.data,
+            date=datetime.now().strftime("%d %b %Y, %I:%M %p"),
+            is_anonymous=form.is_anonymous.data
+        )
 
-    new_feedback = Feedback(
-        student=session.get("user", "Unknown"),
-        department=request.form.get("department", ""),
-        teacher=request.form.get("teacher", ""),
-        subject=request.form.get("subject", ""),
-        rating=rating,
-        comment=request.form.get("comment", ""),
-        date=datetime.now().strftime("%d %b %Y, %I:%M %p"),
-        is_anonymous=True if request.form.get("is_anonymous") else False
-    )
+        db.session.add(new_feedback)
+        db.session.commit()
 
-    db.session.add(new_feedback)
-    db.session.commit()
-
-    theme = session.get("theme", "theme-light")
-    return render_template("success.html", theme=theme, feedback_id=new_feedback.id)
+        theme = session.get("theme", "theme-light")
+        return render_template("success.html", theme=theme, feedback_id=new_feedback.id)
+    return redirect("/feedback")
 
 @app.route("/view_feedback/<int:id>")
 def view_feedback(id):
@@ -292,7 +299,8 @@ def dashboard():
     data = Feedback.query.filter_by(teacher=teacher_name).all()
     
     ratings = [f.rating for f in data]
-    students = [f.student for f in data]
+    # Respect anonymity in chart labels
+    students = ["Anonymous" if f.is_anonymous else f.student for f in data]
 
     avg = round(sum(ratings) / len(ratings), 2) if ratings else 0.0  # type: ignore
     ai_score = round(avg * 20.0, 1)  # type: ignore
@@ -340,24 +348,24 @@ def teacher_marks():
     teacher = session["user"]
     message = None
     
-    if request.method == "POST":
-        student_username = request.form.get("student")
-        subject = request.form.get("subject")
-        semester = request.form.get("semester")
-        score = request.form.get("score")
+    form = MarkForm()
+    if request.method == "POST" and form.validate_on_submit():
+        student_username = form.student.data
+        subject = form.subject.data
+        semester = form.semester.data
+        score = form.score.data
         
-        if student_username and subject and semester and score:
-            new_mark = Mark(
-                student_username=student_username,
-                teacher_username=teacher,
-                subject=subject,
-                semester=semester,
-                score=score,
-                date_added=datetime.now().strftime("%d %b %Y, %I:%M %p")
-            )
-            db.session.add(new_mark)
-            db.session.commit()
-            message = "Mark added successfully!"
+        new_mark = Mark(
+            student_username=student_username,
+            teacher_username=teacher,
+            subject=subject,
+            semester=semester,
+            score=score,
+            date_added=datetime.now().strftime("%d %b %Y, %I:%M %p")
+        )
+        db.session.add(new_mark)
+        db.session.commit()
+        message = "Mark added successfully!"
             
     # GET display data
     teacher_marks = Mark.query.filter_by(teacher_username=teacher).all()
@@ -438,6 +446,10 @@ def settings():
         elif action == "theme":
             theme            = request.form.get("theme", "theme-light")
             session["theme"] = theme
+            user = User.query.filter_by(username=teacher).first()
+            if user:
+                user.theme = theme
+                db.session.commit()
             message          = "Theme saved!"
 
     return render_template("settings.html", teacher=teacher, message=message, theme=theme)
@@ -484,53 +496,61 @@ def add_user():
     if "user" not in session or session.get("role") != "admin":
         return redirect("/")
     
-    username = request.form.get("username", "").strip()
-    password = request.form.get("password", "").strip()
-    role = request.form.get("role", "student").strip()
-    full_name = request.form.get("full_name", "").strip()
-    email = request.form.get("email", "").strip()
-    mobile = request.form.get("mobile", "").strip()
-    year = request.form.get("year", "").strip()
-    
-    # Validation: Ensure all basic info is present
-    if not (username and password and full_name and email and mobile and role):
-        return redirect("/admin_users")
-    
-    # Validation: Ensure year is present if role is student
-    if role == "student" and not year:
-        return redirect("/admin_users")
-    
-    # Validation: Ensure photo is uploaded
-    if 'photo' not in request.files:
-        return redirect("/admin_users")
-    
-    file = request.files['photo']
-    if not (file and file.filename != '' and allowed_file(file.filename)):
-        return redirect("/admin_users")
+    form = AddUserForm()
+    if form.validate_on_submit():
+        username = form.username.data.strip()
+        password = form.password.data.strip()
+        role = form.role.data.strip()
+        full_name = form.full_name.data.strip()
+        email = form.email.data.strip()
+        mobile = form.mobile.data.strip()
+        year = form.year.data.strip() if form.year.data else ""
+        
+        # Validation: Ensure year is present if role is student
+        if role == "student" and not year:
+            flash("Student year is required.", "error")
+            return redirect("/admin_users")
+        
+        # Determine photo URL
+        photo_url = "/static/uploads/profile_photos/default.png"
+        if 'photo' in request.files:
+            file = request.files['photo']
+            if file and file.filename != '' and allowed_file(file.filename):
+                if not os.path.exists(app.config['UPLOAD_FOLDER']):
+                    os.makedirs(app.config['UPLOAD_FOLDER'])
+                
+                filename = secure_filename(f"{username}_{file.filename}")
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+                photo_url = f"/static/uploads/profile_photos/{filename}"
 
-    if role in ["admin", "teacher", "student"]:
-        existing = User.query.filter_by(username=username).first()
-        if not existing:
-            hashed_pw = generate_password_hash(password)
-            
-            # Save the photofile
-            filename = secure_filename(f"{username}_{file.filename}")
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
-            photo_url = f"/static/uploads/profile_photos/{filename}"
-            
-            new_user = User(
-                username=username, 
-                password_hash=hashed_pw, 
-                role=role,
-                full_name=full_name,
-                email=email,
-                mobile=mobile,
-                year=year,
-                photo_url=photo_url
-            )
-            db.session.add(new_user)
-            db.session.commit()
+        if role in ["admin", "teacher", "student"]:
+            existing = User.query.filter_by(username=username).first()
+            if not existing:
+                hashed_pw = generate_password_hash(password)
+                new_user = User(
+                    username=username, 
+                    password_hash=hashed_pw, 
+                    role=role,
+                    full_name=full_name,
+                    email=email,
+                    mobile=mobile,
+                    year=year,
+                    photo_url=photo_url
+                )
+                db.session.add(new_user)
+                db.session.commit()
+                flash(f"User {username} created successfully!", "success")
+            else:
+                flash(f"Error: Username '{username}' already exists.", "error")
+        else:
+            flash("Error: Invalid role selected.", "error")
+    else:
+        # If form validation failed, report specific errors
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error in {getattr(form, field).label.text}: {error}", "error")
+
     return redirect("/admin_users")
 
 @app.route("/delete_user/<int:user_id>", methods=["POST"])
@@ -598,6 +618,10 @@ def admin_settings():
         elif action == "theme":
             theme            = request.form.get("theme", "theme-light")
             session["theme"] = theme
+            user = User.query.filter_by(username=admin).first()
+            if user:
+                user.theme = theme
+                db.session.commit()
             message          = "Theme saved!"
 
     return render_template("admin_settings.html", admin=admin, message=message, theme=theme)

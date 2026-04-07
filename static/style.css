@@ -120,8 +120,14 @@ body {
 }
 
 .app-bg {
-  background: url('/static/images/admin_bg.png') no-repeat center center fixed !important;
-  background-size: cover !important;
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.12), transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.12), transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.08), transparent 45%),
+    var(--surface) !important;
+  background-attachment: fixed !important;
+  background-size: 200% 200% !important;
+  animation: ambientBrush 20s ease-in-out infinite !important;
 }
 
 /* ==============================
